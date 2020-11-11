@@ -41,6 +41,7 @@ class Database(Base):
     def init_db(self, app):
         backend = get_backend(app)
         cls = load_backend(backend)
+        # looks like multiple extensions?
         self.__class__ = type('DatabaseImpl', (cls.Backend, Database), {})
 
         try:
