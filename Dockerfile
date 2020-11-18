@@ -1,4 +1,5 @@
 FROM python:3.8-alpine
+USER alerta
 
 RUN apk add --no-cache \
     bash \
