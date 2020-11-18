@@ -1,5 +1,4 @@
 FROM python:3.8-alpine
-USER alerta
 
 RUN apk add --no-cache \
     bash \
@@ -8,6 +7,8 @@ RUN apk add --no-cache \
     openssl-dev \
     postgresql-dev \
     python3-dev
+
+USER daemon
 
 COPY . /app
 WORKDIR /app
