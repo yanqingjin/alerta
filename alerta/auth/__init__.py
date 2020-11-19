@@ -6,6 +6,7 @@ from alerta.exceptions import ApiError
 class AuthBlueprint(Blueprint):
 
     def register(self, app, options, first_registration=False):
+        # Separate route by different AUTH_PROVIDER value
         if app.config['AUTH_PROVIDER'] == 'ldap':
             try:
                 import ldap  # noqa
@@ -15,6 +16,7 @@ class AuthBlueprint(Blueprint):
         else:
             from . import basic  # noqa
 
+        # SAML(Security Assertion Markup Language)
         if app.config['AUTH_PROVIDER'] == 'saml2':
             try:
                 import saml2  # noqa
