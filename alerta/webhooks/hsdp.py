@@ -1,12 +1,10 @@
 from typing import Any, Dict
 
-from alerta.app import alarm_model
-
-from alerta.exceptions import ApiError
 from flask import jsonify
 
+from alerta.app import alarm_model
 from alerta.models.alert import Alert
-
+from alerta.exceptions import ApiError
 from . import WebhookBase
 
 JSON = Dict[str, Any]
@@ -14,21 +12,21 @@ JSON = Dict[str, Any]
 
 def parse_hsdp(alert: JSON, external_url: str) -> Alert:
 
-    status = alert.get('status', 'firing')
+    status = alert['alerts'][0].get('status', 'firing')
 
     # Allow labels and annotations to use python string formats that refer to
     # other labels eg. runbook = 'https://internal.myorg.net/wiki/alerts/{app}/{alertname}'
-    # See https://github.com/prometheus/prometheus/issues/2818
+
 
     labels = {}
-    for k, v in alert['labels'].items():
+    for k, v in alert['alerts'][0]['labels'].items():
         try:
             labels[k] = v.format(**alert['labels'])
         except Exception:
             labels[k] = v
 
     annotations = {}
-    for k, v in alert['annotations'].items():
+    for k, v in alert['alerts'][0]['annotations'].items():
         try:
             annotations[k] = v.format(**labels)
         except Exception:
@@ -41,17 +39,16 @@ def parse_hsdp(alert: JSON, external_url: str) -> Alert:
     else:
         severity = 'unknown'
 
-    # labels
+    # labels    pop返回字典中的key对应的值并且在字典中删除这一对键值对
     resource = labels.pop('exported_instance', None) or labels.pop('instance', 'n/a')
-    #labels如果没有alertaname 就去groupLabels寻找，没有就去commonLabels寻找，再没有，就去event寻找，都没有，值为None
-    event = labels.pop('alertname') or alert('groupLabels').pop('alertname') or alert('commonLabels').pop('alertname')  or labels.pop('event', None)
-    #pop方法pop(key[,default])  key: 要删除的键值  default: 如果没有 key，返回 default 值
+    #修改内容 如果labels里面没有内容，groupLabels 去找，找不到去commonLabels 去找，找不到，去event去找，找不到，默认None
+    event = labels.pop('alertname') or alert['groupLabels'].pop('alertname') or alert['commonLabels'].pop('alertname') or labels.pop('event', None)
     environment = labels.pop('environment', 'Production')
     customer = labels.pop('customer', None)
     correlate = labels.pop('correlate').split(',') if 'correlate' in labels else None
     service = labels.pop('service', '').split(',')
-    group = labels.pop('group', None) or labels.pop('job', 'Prometheus')
-    origin = 'prometheus/' + labels.pop('monitor', '-')
+    group = labels.pop('group', None) or labels.pop('job', 'hsdp')
+    origin = 'hsdp/' + labels.pop('monitor', '-')
     tags = ['{}={}'.format(k, v) for k, v in labels.items()]  # any labels left over are used for tags
 
     try:
@@ -67,13 +64,13 @@ def parse_hsdp(alert: JSON, external_url: str) -> Alert:
 
     if external_url:
         annotations['externalUrl'] = external_url  # needed as raw URL for bi-directional integration
-    if 'generatorURL' in alert:
-        annotations['moreInfo'] = '<a href="{}" target="_blank">hsdp Graph</a>'.format(alert['generatorURL'])
+    if 'generatorURL' in alert['alerts'][0]:
+        annotations['moreInfo'] = '<a href="{}" target="_blank">hsdp Graph</a>'.format(alert['alerts'][0]['generatorURL'])
 
     # attributes
     attributes = {
-        'startsAt': alert['startsAt'],
-        'endsAt': alert['endsAt']
+        'startsAt': alert['alerts'][0]['startsAt'],
+        'endsAt': alert['alerts'][0]['endsAt']
     }
     attributes.update(annotations)  # any annotations left over are used for attributes
 
@@ -99,13 +96,14 @@ def parse_hsdp(alert: JSON, external_url: str) -> Alert:
 
 class HsdpWebhook(WebhookBase):
     """
-    Riemann HTTP client
-    http://riemann.io/clients.html
+    #hsdplog Log Management HTTP alert notifications
+    目前是测试函数是否能够运行
     """
 
     def incoming(self, path, query_string, payload):
+
         if payload and 'alerts' in payload:
             external_url = payload.get('externalURL')
-            return [parse_hsdp(alert, external_url) for alert in payload['alerts']]
+            return parse_hsdp(payload, external_url)
         else:
-            raise ApiError('no alerts in hsdp notification payload', 400)
+            raise ApiError('no alerts in Hsdp notification payload', 400)
