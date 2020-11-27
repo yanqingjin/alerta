@@ -1,7 +1,5 @@
 from typing import Any, Dict
 
-from flask import jsonify
-
 from alerta.app import alarm_model
 from alerta.models.alert import Alert
 from alerta.exceptions import ApiError
@@ -10,23 +8,23 @@ from . import WebhookBase
 JSON = Dict[str, Any]
 
 
-def parse_hsdp(alert: JSON, external_url: str) -> Alert:
+def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> Alert:
 
-    status = alert['alerts'][0].get('status', 'firing')
+    status = alert.get('status', 'firing')
 
     # Allow labels and annotations to use python string formats that refer to
     # other labels eg. runbook = 'https://internal.myorg.net/wiki/alerts/{app}/{alertname}'
 
 
     labels = {}
-    for k, v in alert['alerts'][0]['labels'].items():
+    for k, v in alert['labels'].items():
         try:
             labels[k] = v.format(**alert['labels'])
         except Exception:
             labels[k] = v
 
     annotations = {}
-    for k, v in alert['alerts'][0]['annotations'].items():
+    for k, v in alert['annotations'].items():
         try:
             annotations[k] = v.format(**labels)
         except Exception:
@@ -39,14 +37,15 @@ def parse_hsdp(alert: JSON, external_url: str) -> Alert:
     else:
         severity = 'unknown'
 
-    # labels    pop返回字典中的key对应的值并且在字典中删除这一对键值对
+    # labels
+    # pop返回字典中的key对应的值并且在字典中删除这一对键值对
     resource = labels.pop('exported_instance', None) or labels.pop('instance', 'n/a')
-    #修改内容 如果labels里面没有内容，groupLabels 去找，找不到去commonLabels 去找，找不到，去event去找，找不到，默认None
-    event = labels.pop('alertname') or alert['groupLabels'].pop('alertname') or alert['commonLabels'].pop('alertname') or labels.pop('event', None)
+    # 如果labels里面没有内容，groupLabels去找, 找不到，默认None
+    event = labels.pop('event', None) or labels.pop('alertname', None) or group_labels.get('alertname')
     environment = labels.pop('environment', 'Production')
     customer = labels.pop('customer', None)
     correlate = labels.pop('correlate').split(',') if 'correlate' in labels else None
-    service = labels.pop('service', '').split(',')
+    service = (labels.pop('service', None) or group_labels.get('application', '')).split(',')
     group = labels.pop('group', None) or labels.pop('job', 'hsdp')
     origin = 'hsdp/' + labels.pop('monitor', '-')
     tags = ['{}={}'.format(k, v) for k, v in labels.items()]  # any labels left over are used for tags
@@ -64,13 +63,13 @@ def parse_hsdp(alert: JSON, external_url: str) -> Alert:
 
     if external_url:
         annotations['externalUrl'] = external_url  # needed as raw URL for bi-directional integration
-    if 'generatorURL' in alert['alerts'][0]:
-        annotations['moreInfo'] = '<a href="{}" target="_blank">hsdp Graph</a>'.format(alert['alerts'][0]['generatorURL'])
+    if 'generatorURL' in alert:
+        annotations['moreInfo'] = '<a href="{}" target="_blank">HSDP Graph</a>'.format(alert['generatorURL'])
 
     # attributes
     attributes = {
-        'startsAt': alert['alerts'][0]['startsAt'],
-        'endsAt': alert['alerts'][0]['endsAt']
+        'startsAt': alert['startsAt'],
+        'endsAt': alert['endsAt']
     }
     attributes.update(annotations)  # any annotations left over are used for attributes
 
@@ -96,14 +95,14 @@ def parse_hsdp(alert: JSON, external_url: str) -> Alert:
 
 class HsdpWebhook(WebhookBase):
     """
-    #hsdplog Log Management HTTP alert notifications
-    目前是测试函数是否能够运行
+    HSDP Log Management alert notification webhook
     """
 
     def incoming(self, path, query_string, payload):
 
         if payload and 'alerts' in payload:
             external_url = payload.get('externalURL')
-            return parse_hsdp(payload, external_url)
+            group_labels = payload.get('groupLabels')
+            return [parse_hsdp(alert, group_labels, external_url) for alert in payload['alerts']]
         else:
             raise ApiError('no alerts in Hsdp notification payload', 400)
