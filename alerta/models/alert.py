@@ -99,6 +99,7 @@ class Alert:
             resource=json.get('resource', None),
             event=json.get('event', None),
             environment=json.get('environment', None),
+            project=json.get('project', None),
             severity=json.get('severity', None),
             correlate=json.get('correlate', list()),
             status=json.get('status', None),
