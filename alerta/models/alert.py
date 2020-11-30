@@ -50,7 +50,7 @@ class Alert:
         self.resource = resource
         self.event = event
         self.environment = kwargs.get('environment', None) or ''
-        self.proj = kwargs.get('proj', None) or ''
+        self.project = kwargs.get('proj', None) or ''
         self.severity = kwargs.get('severity', None) or alarm_model.DEFAULT_NORMAL_SEVERITY
         self.correlate = kwargs.get('correlate', None) or list()
         if self.correlate and event not in self.correlate:
