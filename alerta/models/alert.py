@@ -50,6 +50,7 @@ class Alert:
         self.resource = resource
         self.event = event
         self.environment = kwargs.get('environment', None) or ''
+        self.proj = kwargs.get('proj', None) or ''
         self.severity = kwargs.get('severity', None) or alarm_model.DEFAULT_NORMAL_SEVERITY
         self.correlate = kwargs.get('correlate', None) or list()
         if self.correlate and event not in self.correlate:
@@ -524,6 +525,11 @@ class Alert:
     @staticmethod
     def get_services(query: Query = None) -> List[str]:
         return db.get_services(query)
+
+    # get projects
+    @staticmethod
+    def get_projects(query: Query = None) -> List[str]:
+        return db.get_projects(query)
 
     # get groups
     @staticmethod

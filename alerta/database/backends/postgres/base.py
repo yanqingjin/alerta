@@ -616,6 +616,40 @@ class Backend(Database):
                 'count': total_count[e.environment]
             } for e in environments]
 
+    # PROJECTS
+
+    def get_projects(self, query=None, topn=1000):
+        query = query or Query()
+        select = """
+            SELECT environment, proj, severity, status, count(1) FROM alerts
+            WHERE {where}
+            GROUP BY environment, proj, CUBE(severity, status)
+        """.format(where=query.where)
+        result = self._fetchall(select, query.vars, limit=topn)
+
+        severity_count = defaultdict(list)
+        status_count = defaultdict(list)
+        total_count = defaultdict(int)
+
+        for row in result:
+            if row.severity and not row.status:
+                severity_count[(row.environment, row.proj)].append((row.severity, row.count))
+            if not row.severity and row.status:
+                status_count[(row.environment, row.proj)].append((row.status, row.count))
+            if not row.severity and not row.status:
+                total_count[(row.environment, row.proj)] = row.count
+
+        select = """SELECT DISTINCT environment, proj FROM alerts"""
+        projects = self._fetchall(select, {})
+        return [
+            {
+                'environment': p.environment,
+                'proj': p.proj,
+                'severityCounts': dict(severity_count[(p.environment, p.proj)]),
+                'statusCounts': dict(status_count[(p.environment, p.proj)]),
+                'count': total_count[(p.environment, p.proj)]
+            } for p in projects]
+
     # SERVICES
 
     def get_services(self, query=None, topn=1000):

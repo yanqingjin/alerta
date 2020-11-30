@@ -197,6 +197,11 @@ class Database(Base):
     def get_services(self, query=None, topn=1000):
         raise NotImplementedError
 
+    # PROJECTS
+
+    def get_projects(self, query=None, topn=1000):
+        raise NotImplementedError
+
     # ALERT GROUPS
 
     def get_alert_groups(self, query=None, topn=1000):
