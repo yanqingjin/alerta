@@ -41,6 +41,7 @@ class Database(Base):
     def init_db(self, app):
         backend = get_backend(app)
         cls = load_backend(backend)
+        # looks like multiple extensions?
         self.__class__ = type('DatabaseImpl', (cls.Backend, Database), {})
 
         try:
@@ -406,7 +407,10 @@ class Database(Base):
     def get_expired(self, expired_threshold, info_threshold):
         raise NotImplementedError
 
-    def get_timeout(self):
+    def get_unshelve(self):
+        raise NotImplementedError
+
+    def get_unack(self):
         raise NotImplementedError
 
 

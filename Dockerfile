@@ -9,6 +9,8 @@ RUN apk add --no-cache \
     python3-dev
 
 COPY . /app
+COPY docker-entrypoint.sh /
+RUN chmod 777 /app
 WORKDIR /app
 
 RUN pip install -r requirements.txt
@@ -18,7 +20,7 @@ ENV ALERTA_SVR_CONF_FILE /app/alertad.conf
 ENV ALERTA_CONF_FILE /app/alerta.conf
 ENV ALERTA_ENDPOINT=http://localhost:8080
 
-COPY docker-entrypoint.sh /
+USER daemon
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
 EXPOSE 8080

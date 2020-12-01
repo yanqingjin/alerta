@@ -34,7 +34,9 @@ key_helper = ApiKeyHelper()
 
 db = Database()
 qb = QueryBuilder()
+
 # Sentry will grab DSN from SENTRY_DSN environment variable.
+# Since we don't use Sentry, consider to remove this module for now.
 sentry_sdk.init(integrations=[FlaskIntegration()])
 
 mailer = Mailer()
@@ -52,6 +54,7 @@ def create_app(config_override: Dict[str, Any] = None, environment: str = None) 
     tracing.setup_tracing(app)
     logger.setup_logging(app)
 
+    # use proxy
     if app.config['USE_PROXYFIX']:
         app.wsgi_app = ProxyFix(app.wsgi_app)  # type: ignore
 
@@ -71,9 +74,11 @@ def create_app(config_override: Dict[str, Any] = None, environment: str = None) 
     plugins.register(app)
     custom_webhooks.register(app)
 
+    # CustomJSONEncoder is an extension for JSONEncoder
     from alerta.utils.format import CustomJSONEncoder
     app.json_encoder = CustomJSONEncoder
 
+    # blueprints are registered here
     from alerta.views import api
     app.register_blueprint(api)
 
@@ -90,6 +95,7 @@ def create_app(config_override: Dict[str, Any] = None, environment: str = None) 
 
 
 try:
+    # Use Celery
     from celery import Celery
 except ImportError:
     pass
