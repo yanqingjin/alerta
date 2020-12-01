@@ -39,10 +39,10 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
 
     # labels
     # pop返回字典中的key对应的值并且在字典中删除这一对键值对
-    resource = labels.pop('exported_instance', None) or labels.pop('instance', 'n/a')
+    resource = labels.pop('instance', 'n/a') or group_labels.get('application', '')
     # 如果labels里面没有内容，groupLabels去找, 找不到，默认None
     event = labels.pop('event', None) or labels.pop('alertname', None) or group_labels.get('alertname')
-    environment = labels.pop('environment', 'Production')
+    environment = 'HSDP'
     customer = labels.pop('customer', None)
     correlate = labels.pop('correlate').split(',') if 'correlate' in labels else None
     service = (labels.pop('service', None) or group_labels.get('application', '')).split(',')
