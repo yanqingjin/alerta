@@ -77,6 +77,7 @@ setuptools.setup(
             'grafana = alerta.webhooks.grafana:GrafanaWebhook',
             'graylog = alerta.webhooks.graylog:GraylogWebhook',
             'hsdp = alerta.webhooks.hsdp:HsdpWebhook',
+            'cloudmonitor = alerta.webhooks.cloudmonitor:CloudMonitorWebhook',
             'newrelic = alerta.webhooks.newrelic:NewRelicWebhook',
             'pagerduty = alerta.webhooks.pagerduty:PagerDutyWebhook',
             'pingdom = alerta.webhooks.pingdom:PingdomWebhook',
