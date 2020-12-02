@@ -15,7 +15,6 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
     # Allow labels and annotations to use python string formats that refer to
     # other labels eg. runbook = 'https://internal.myorg.net/wiki/alerts/{app}/{alertname}'
 
-
     labels = {}
     for k, v in alert['labels'].items():
         try:
@@ -39,14 +38,14 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
 
     # labels
     # pop返回字典中的key对应的值并且在字典中删除这一对键值对
-    resource = labels.pop('instance', 'n/a') or group_labels.get('application', '')
+    resource = labels.pop('application', None) or group_labels.get('application')
     # 如果labels里面没有内容，groupLabels去找, 找不到，默认None
     event = labels.pop('event', None) or labels.pop('alertname', None) or group_labels.get('alertname')
     environment = 'HSDP'
     customer = labels.pop('customer', None)
     correlate = labels.pop('correlate').split(',') if 'correlate' in labels else None
-    service = (labels.pop('service', None) or group_labels.get('application', '')).split(',')
-    group = labels.pop('group', None) or labels.pop('job', 'hsdp')
+    service = labels.pop('service', '').split(',')
+    group = labels.pop('group', None) or labels.pop('organization', None) or labels.pop('job', 'HSDP')
     origin = 'hsdp/' + labels.pop('monitor', '-')
     tags = ['{}={}'.format(k, v) for k, v in labels.items()]  # any labels left over are used for tags
 
@@ -105,4 +104,4 @@ class HsdpWebhook(WebhookBase):
             group_labels = payload.get('groupLabels')
             return [parse_hsdp(alert, group_labels, external_url) for alert in payload['alerts']]
         else:
-            raise ApiError('no alerts in Hsdp notification payload', 400)
+            raise ApiError('no alerts in HSDP notification payload', 400)
