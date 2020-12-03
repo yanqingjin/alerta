@@ -25,6 +25,7 @@ wheels/
 *.egg
 MANIFEST
 build.py
+main.py
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -75,6 +76,10 @@ target/
 
 # pyenv
 .python-version
+
+# pipenv
+Pipfile
+Pipfile.lock
 
 # celery beat schedule file
 celerybeat-schedule
