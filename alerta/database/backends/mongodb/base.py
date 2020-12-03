@@ -813,36 +813,33 @@ class Backend(Database):
         def pipeline(group_by):
             return [
                 {'$match': query.where},
-                {'$project': {'environment': 1, 'proj': 1, group_by: 1}},
-                {'$group': {
-                    '_id': {'environment': '$environment', 'proj': '$proj', group_by: '$' + group_by},
-                    'count': {'$sum': 1}
-                }},
+                {'$project': {'environment': 1, 'project': 1, group_by: 1}},
+                {'$group': {'_id': {'environment': '$environment', 'project': '$project', group_by: '$' + group_by}, 'count': {'$sum': 1}}},
                 {'$limit': topn}
             ]
 
         response_severity = self.get_db().alerts.aggregate(pipeline('severity'))
         severity_count = defaultdict(list)
         for r in response_severity:
-            severity_count[(r['_id']['environment'], r['_id']['proj'])].append((r['_id']['severity'], r['count']))
+            severity_count[(r['_id']['environment'], r['_id']['project'])].append((r['_id']['severity'], r['count']))
 
         response_status = self.get_db().alerts.aggregate(pipeline('status'))
         status_count = defaultdict(list)
         for r in response_status:
-            status_count[(r['_id']['environment'], r['_id']['proj'])].append((r['_id']['status'], r['count']))
+            status_count[(r['_id']['environment'], r['_id']['project'])].append((r['_id']['status'], r['count']))
 
         pipeline = [
-            {'$group': {'_id': {'environment': '$environment', 'proj': '$proj'}}},
+            {'$group': {'_id': {'environment': '$environment', 'project': '$project'}}},
             {'$limit': topn}
         ]
         projects = list(self.get_db().alerts.aggregate(pipeline))
         return [
             {
                 'environment': p['_id']['environment'],
-                'project': p['_id']['proj'],
-                'severityCounts': dict(severity_count[(p['_id']['environment'], p['_id']['proj'])]),
-                'statusCounts': dict(status_count[(p['_id']['environment'], p['_id']['proj'])]),
-                'count': sum(t[1] for t in severity_count[(p['_id']['environment'], p['_id']['proj'])])
+                'project': p['_id']['project'],
+                'severityCounts': dict(severity_count[(p['_id']['environment'], p['_id']['project'])]),
+                'statusCounts': dict(status_count[(p['_id']['environment'], p['_id']['project'])]),
+                'count': sum(t[1] for t in severity_count[(p['_id']['environment'], p['_id']['project'])])
             } for p in projects]
 
     # SERVICES

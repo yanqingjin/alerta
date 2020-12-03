@@ -50,7 +50,7 @@ class Alert:
         self.resource = resource
         self.event = event
         self.environment = kwargs.get('environment', None) or ''
-        self.project = kwargs.get('proj', None) or ''
+        self.project = kwargs.get('project', None) or ''
         self.severity = kwargs.get('severity', None) or alarm_model.DEFAULT_NORMAL_SEVERITY
         self.correlate = kwargs.get('correlate', None) or list()
         if self.correlate and event not in self.correlate:
@@ -125,6 +125,7 @@ class Alert:
             'resource': self.resource,
             'event': self.event,
             'environment': self.environment,
+            'project': self.project,
             'severity': self.severity,
             'correlate': self.correlate,
             'status': self.status,
@@ -164,8 +165,8 @@ class Alert:
         return body
 
     def __repr__(self) -> str:
-        return 'Alert(id={!r}, environment={!r}, resource={!r}, event={!r}, severity={!r}, status={!r}, customer={!r})'.format(
-            self.id, self.environment, self.resource, self.event, self.severity, self.status, self.customer
+        return 'Alert(id={!r}, environment={!r}, project={!r}, resource={!r}, event={!r}, severity={!r}, status={!r}, customer={!r})'.format(
+            self.id, self.environment, self.project, self.resource, self.event, self.severity, self.status, self.customer
         )
 
     @classmethod
@@ -175,6 +176,7 @@ class Alert:
             resource=doc.get('resource', None),
             event=doc.get('event', None),
             environment=doc.get('environment', None),
+            project=doc.get('project', None),
             severity=doc.get('severity', None),
             correlate=doc.get('correlate', list()),
             status=doc.get('status', None),
@@ -208,6 +210,7 @@ class Alert:
             resource=rec.resource,
             event=rec.event,
             environment=rec.environment,
+            project=rec.project,
             severity=rec.severity,
             correlate=rec.correlate,
             status=rec.status,
