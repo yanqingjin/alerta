@@ -19,6 +19,8 @@ class CloudMonitorWebhook(WebhookBase):
         elif trigger_level == 'WARN':
             return 'warning'
         elif trigger_level == 'INFO':
+            return 'informational'
+        elif trigger_level == 'OK':
             return alarm_model.DEFAULT_NORMAL_SEVERITY
         else:
             return 'unknown'
