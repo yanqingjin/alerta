@@ -31,6 +31,8 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
 
     if status == 'firing':
         severity = labels.pop('severity', 'warning')
+        if severity == 'error':
+            severity = 'warning'
     elif status == 'resolved':
         severity = alarm_model.DEFAULT_NORMAL_SEVERITY
     else:
@@ -44,7 +46,7 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
     environment = 'HSDP'
     customer = labels.pop('customer', None)
     correlate = labels.pop('correlate').split(',') if 'correlate' in labels else None
-    service = labels.pop('service', '').split(',')
+    service = [labels.pop('application', None) or group_labels.get('application')]
     group = labels.pop('group', None) or labels.pop('organization', None) or labels.pop('job', 'HSDP')
     origin = 'hsdp/' + labels.pop('monitor', '-')
     tags = ['{}={}'.format(k, v) for k, v in labels.items()]  # any labels left over are used for tags

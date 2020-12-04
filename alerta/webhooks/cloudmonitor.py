@@ -15,7 +15,7 @@ class CloudMonitorWebhook(WebhookBase):
     @staticmethod
     def trigger_level_to_severity(trigger_level: str) -> str:
         if trigger_level == 'CRITICAL':
-            return 'major'
+            return 'critical'
         elif trigger_level == 'WARN':
             return 'warning'
         elif trigger_level == 'INFO':
@@ -32,7 +32,7 @@ class CloudMonitorWebhook(WebhookBase):
                 event=payload['alertName'],
                 environment='HSC',
                 severity=self.trigger_level_to_severity(payload['triggerLevel']),
-                service=[payload['userId']],
+                service=[payload['instanceName']],
                 group=payload['namespace'],
                 value=payload['curValue'],
                 origin='CloudMonitor',
