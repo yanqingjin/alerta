@@ -245,14 +245,15 @@ class Backend(Database):
         )
         return self._updateone(update, vars(alert), returning=True)
 
+    # TODO(RylandCai): 这种做法 增删字段 每条sql都给改...
     def create_alert(self, alert):
         insert = """
-            INSERT INTO alerts (id, resource, event, environment, severity, correlate, status, service, "group",
-                value, text, tags, attributes, origin, type, create_time, timeout, raw_data, customer,
+            INSERT INTO alerts (id, resource, event, environment, project, severity, correlate, status, service,
+                "group", value, text, tags, attributes, origin, type, create_time, timeout, raw_data, customer,
                 duplicate_count, repeat, previous_severity, trend_indication, receive_time, last_receive_id,
                 last_receive_time, update_time, history)
-            VALUES (%(id)s, %(resource)s, %(event)s, %(environment)s, %(severity)s, %(correlate)s, %(status)s,
-                %(service)s, %(group)s, %(value)s, %(text)s, %(tags)s, %(attributes)s, %(origin)s,
+            VALUES (%(id)s, %(resource)s, %(event)s, %(environment)s, %(project)s, %(severity)s, %(correlate)s,
+                %(status)s, %(service)s, %(group)s, %(value)s, %(text)s, %(tags)s, %(attributes)s, %(origin)s,
                 %(event_type)s, %(create_time)s, %(timeout)s, %(raw_data)s, %(customer)s, %(duplicate_count)s,
                 %(repeat)s, %(previous_severity)s, %(trend_indication)s, %(receive_time)s, %(last_receive_id)s,
                 %(last_receive_time)s, %(update_time)s, %(history)s::history[])

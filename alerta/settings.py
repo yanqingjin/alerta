@@ -192,6 +192,7 @@ DEFAULT_FILTER = {'status': ['open', 'ack']}
 ASI_SEVERITY = [
     'critical', 'major', 'minor', 'warning', 'indeterminate', 'informational'
 ]
+# TODO(RylandCai): what for?
 ASI_QUERIES = [
     {'text': 'Production', 'query': [['environment', 'Production']]},
     {'text': 'Development', 'query': [['environment', 'Development']]},

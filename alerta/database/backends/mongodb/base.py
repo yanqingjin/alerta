@@ -236,6 +236,7 @@ class Backend(Database):
             return_document=ReturnDocument.AFTER
         )
 
+    # TODO(RylandCai): can project field be updated?
     def correlate_alert(self, alert, history):
         """
         Update alert key attributes, reset duplicate count and set repeat=False, keep track of last
@@ -297,12 +298,14 @@ class Backend(Database):
             return_document=ReturnDocument.AFTER
         )
 
+    # TODO(RylandCai): 抽取model
     def create_alert(self, alert):
         data = {
             '_id': alert.id,
             'resource': alert.resource,
             'event': alert.event,
             'environment': alert.environment,
+            'project': alert.project,
             'severity': alert.severity,
             'correlate': alert.correlate,
             'status': alert.status,
@@ -852,12 +855,7 @@ class Backend(Database):
                 {'$unwind': '$service'},
                 {'$match': query.where},
                 {'$project': {'environment': 1, 'service': 1, group_by: 1}},
-                {'$group':
-                 {
-                     '_id': {'environment': '$environment', 'service': '$service', group_by: '$' + group_by},
-                     'count': {'$sum': 1}
-                 }
-                 },
+                {'$group': {'_id': {'environment': '$environment', 'service': '$service', group_by: '$' + group_by},'count': {'$sum': 1}}},
                 {'$limit': topn}
             ]
 
