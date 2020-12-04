@@ -50,6 +50,7 @@ def process_alert(alert: Alert) -> Alert:
         if not alert:
             raise SyntaxError("Plugin '%s' pre-receive hook did not return modified alert" % plugin.name)
 
+    # TODO(RylandCai)
     try:
         is_duplicate = alert.is_duplicate()
         if is_duplicate:
