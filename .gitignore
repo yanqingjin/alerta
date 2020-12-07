@@ -119,4 +119,3 @@ pg-data/
 *.BAK
 *.log*
 .vscode
-tmp.txt
