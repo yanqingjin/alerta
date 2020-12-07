@@ -245,14 +245,15 @@ class Backend(Database):
         )
         return self._updateone(update, vars(alert), returning=True)
 
+    # TODO(RylandCai): 这种做法 增删字段 每条sql都给改...
     def create_alert(self, alert):
         insert = """
-            INSERT INTO alerts (id, resource, event, environment, severity, correlate, status, service, "group",
-                value, text, tags, attributes, origin, type, create_time, timeout, raw_data, customer,
+            INSERT INTO alerts (id, resource, event, environment, project, severity, correlate, status, service,
+                "group", value, text, tags, attributes, origin, type, create_time, timeout, raw_data, customer,
                 duplicate_count, repeat, previous_severity, trend_indication, receive_time, last_receive_id,
                 last_receive_time, update_time, history)
-            VALUES (%(id)s, %(resource)s, %(event)s, %(environment)s, %(severity)s, %(correlate)s, %(status)s,
-                %(service)s, %(group)s, %(value)s, %(text)s, %(tags)s, %(attributes)s, %(origin)s,
+            VALUES (%(id)s, %(resource)s, %(event)s, %(environment)s, %(project)s, %(severity)s, %(correlate)s,
+                %(status)s, %(service)s, %(group)s, %(value)s, %(text)s, %(tags)s, %(attributes)s, %(origin)s,
                 %(event_type)s, %(create_time)s, %(timeout)s, %(raw_data)s, %(customer)s, %(duplicate_count)s,
                 %(repeat)s, %(previous_severity)s, %(trend_indication)s, %(receive_time)s, %(last_receive_id)s,
                 %(last_receive_time)s, %(update_time)s, %(history)s::history[])
@@ -615,6 +616,40 @@ class Backend(Database):
                 'statusCounts': dict(status_count[e.environment]),
                 'count': total_count[e.environment]
             } for e in environments]
+
+    # PROJECTS
+
+    def get_projects(self, query=None, topn=1000):
+        query = query or Query()
+        select = """
+            SELECT environment, project, severity, status, count(1) FROM alerts
+            WHERE {where}
+            GROUP BY environment, project, CUBE(severity, status)
+        """.format(where=query.where)
+        result = self._fetchall(select, query.vars, limit=topn)
+
+        severity_count = defaultdict(list)
+        status_count = defaultdict(list)
+        total_count = defaultdict(int)
+
+        for row in result:
+            if row.severity and not row.status:
+                severity_count[(row.environment, row.project)].append((row.severity, row.count))
+            if not row.severity and row.status:
+                status_count[(row.environment, row.project)].append((row.status, row.count))
+            if not row.severity and not row.status:
+                total_count[(row.environment, row.project)] = row.count
+
+        select = """SELECT DISTINCT environment, project FROM alerts"""
+        projects = self._fetchall(select, {})
+        return [
+            {
+                'environment': p.environment,
+                'project': p.project,
+                'severityCounts': dict(severity_count[(p.environment, p.project)]),
+                'statusCounts': dict(status_count[(p.environment, p.project)]),
+                'count': total_count[(p.environment, p.project)]
+            } for p in projects]
 
     # SERVICES
 

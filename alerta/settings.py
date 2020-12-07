@@ -139,10 +139,7 @@ AUDIT_URL = None  # send audit log events via webhook URL
 # CORS settings
 CORS_ALLOW_HEADERS = ['Content-Type', 'Authorization', 'Access-Control-Allow-Origin']
 CORS_ORIGINS = [
-    # 'http://try.alerta.io',
-    # 'http://explorer.alerta.io',
-    'http://localhost',
-    'http://localhost:8000',
+    r'http://localhost:[0-9]*',
     r'https?://\w*\.?local\.alerta\.io:?\d*/?.*'  # => http(s)://*.local.alerta.io:<port>
 ]
 CORS_SUPPORTS_CREDENTIALS = AUTH_REQUIRED
@@ -186,7 +183,7 @@ DATE_FORMAT_SHORT_TIME = 'HH:mm'  # eg. 09:24
 DEFAULT_AUDIO_FILE = None  # must exist on client at relative path eg. '/audio/alert_high-intensity.ogg' or URL
 COLUMNS = [
     'severity', 'status', 'lastReceiveTime', 'timeoutLeft', 'duplicateCount',
-    'customer', 'environment', 'service', 'resource', 'event', 'value', 'text'
+    'customer', 'project', 'environment', 'service', 'resource', 'event', 'value', 'text'
 ]
 SORT_LIST_BY = ['severity', 'lastReceiveTime']  # eg. newest='lastReceiveTime' or oldest='-createTime' (Note: minus means reverse)
 DEFAULT_FILTER = {'status': ['open', 'ack']}
@@ -195,6 +192,7 @@ DEFAULT_FILTER = {'status': ['open', 'ack']}
 ASI_SEVERITY = [
     'critical', 'major', 'minor', 'warning', 'indeterminate', 'informational'
 ]
+# TODO(RylandCai): what for?
 ASI_QUERIES = [
     {'text': 'Production', 'query': [['environment', 'Production']]},
     {'text': 'Development', 'query': [['environment', 'Development']]},

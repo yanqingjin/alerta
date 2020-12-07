@@ -40,17 +40,22 @@ class Backend(Database):
             unique=True
         )
         db.alerts.create_index([('$**', TEXT)])
+
         db.customers.drop_indexes()  # FIXME: should only drop customers index if it's unique (ie. the old one)
         db.customers.create_index([('match', ASCENDING)])
+
         db.heartbeats.create_index([('origin', ASCENDING), ('customer', ASCENDING)], unique=True)
+
         db.keys.create_index([('key', ASCENDING)], unique=True)
+
         db.perms.create_index([('match', ASCENDING)], unique=True)
+
         db.users.drop_indexes()
-        db.users.create_index([('login', ASCENDING)], unique=True,
-                              partialFilterExpression={'login': {'$type': 'string'}})
-        db.users.create_index([('email', ASCENDING)], unique=True,
-                              partialFilterExpression={'email': {'$type': 'string'}})
+        db.users.create_index([('login', ASCENDING)], unique=True, partialFilterExpression={'login': {'$type': 'string'}})
+        db.users.create_index([('email', ASCENDING)], unique=True, partialFilterExpression={'email': {'$type': 'string'}})
+
         db.groups.create_index([('name', ASCENDING)], unique=True)
+
         db.metrics.create_index([('group', ASCENDING), ('name', ASCENDING)], unique=True)
 
     @staticmethod
@@ -236,6 +241,7 @@ class Backend(Database):
             return_document=ReturnDocument.AFTER
         )
 
+    # TODO(RylandCai): can project field be updated?
     def correlate_alert(self, alert, history):
         """
         Update alert key attributes, reset duplicate count and set repeat=False, keep track of last
@@ -297,12 +303,14 @@ class Backend(Database):
             return_document=ReturnDocument.AFTER
         )
 
+    # TODO(RylandCai): 抽取model
     def create_alert(self, alert):
         data = {
             '_id': alert.id,
             'resource': alert.resource,
             'event': alert.event,
             'environment': alert.environment,
+            'project': alert.project,
             'severity': alert.severity,
             'correlate': alert.correlate,
             'status': alert.status,
@@ -805,6 +813,43 @@ class Backend(Database):
                 'count': sum(t[1] for t in severity_count[env])
             } for env in environments]
 
+    # PROJECTS
+
+    def get_projects(self, query=None, topn=1000):
+        query = query or Query()
+
+        def pipeline(group_by):
+            return [
+                {'$match': query.where},
+                {'$project': {'environment': 1, 'project': 1, group_by: 1}},
+                {'$group': {'_id': {'environment': '$environment', 'project': '$project', group_by: '$' + group_by}, 'count': {'$sum': 1}}},
+                {'$limit': topn}
+            ]
+
+        response_severity = self.get_db().alerts.aggregate(pipeline('severity'))
+        severity_count = defaultdict(list)
+        for r in response_severity:
+            severity_count[(r['_id']['environment'], r['_id']['project'])].append((r['_id']['severity'], r['count']))
+
+        response_status = self.get_db().alerts.aggregate(pipeline('status'))
+        status_count = defaultdict(list)
+        for r in response_status:
+            status_count[(r['_id']['environment'], r['_id']['project'])].append((r['_id']['status'], r['count']))
+
+        pipeline = [
+            {'$group': {'_id': {'environment': '$environment', 'project': '$project'}}},
+            {'$limit': topn}
+        ]
+        projects = list(self.get_db().alerts.aggregate(pipeline))
+        return [
+            {
+                'environment': p['_id']['environment'],
+                'project': p['_id']['project'],
+                'severityCounts': dict(severity_count[(p['_id']['environment'], p['_id']['project'])]),
+                'statusCounts': dict(status_count[(p['_id']['environment'], p['_id']['project'])]),
+                'count': sum(t[1] for t in severity_count[(p['_id']['environment'], p['_id']['project'])])
+            } for p in projects]
+
     # SERVICES
 
     def get_services(self, query=None, topn=1000):
@@ -815,12 +860,7 @@ class Backend(Database):
                 {'$unwind': '$service'},
                 {'$match': query.where},
                 {'$project': {'environment': 1, 'service': 1, group_by: 1}},
-                {'$group':
-                 {
-                     '_id': {'environment': '$environment', 'service': '$service', group_by: '$' + group_by},
-                     'count': {'$sum': 1}
-                 }
-                 },
+                {'$group': {'_id': {'environment': '$environment', 'service': '$service', group_by: '$' + group_by}, 'count': {'$sum': 1}}},
                 {'$limit': topn}
             ]
 

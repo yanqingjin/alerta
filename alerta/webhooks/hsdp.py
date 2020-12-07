@@ -41,6 +41,7 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
     resource = labels.pop('application', None) or group_labels.get('application')
     # 如果labels里面没有内容，groupLabels去找, 找不到，默认None
     event = labels.pop('event', None) or labels.pop('alertname', None) or group_labels.get('alertname')
+    # TODO(RylandCai): add project here (maybe into attributes)
     environment = 'HSDP'
     customer = labels.pop('customer', None)
     correlate = labels.pop('correlate').split(',') if 'correlate' in labels else None
