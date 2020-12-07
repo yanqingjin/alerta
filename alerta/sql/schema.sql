@@ -1,4 +1,3 @@
-
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'history') THEN
@@ -34,6 +33,7 @@ CREATE TABLE IF NOT EXISTS alerts (
     resource text NOT NULL,
     event text NOT NULL,
     environment text,
+    project text,
     severity text,
     correlate text[],
     status text,

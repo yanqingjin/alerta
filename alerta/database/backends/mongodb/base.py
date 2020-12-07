@@ -40,17 +40,22 @@ class Backend(Database):
             unique=True
         )
         db.alerts.create_index([('$**', TEXT)])
+
         db.customers.drop_indexes()  # FIXME: should only drop customers index if it's unique (ie. the old one)
         db.customers.create_index([('match', ASCENDING)])
+
         db.heartbeats.create_index([('origin', ASCENDING), ('customer', ASCENDING)], unique=True)
+
         db.keys.create_index([('key', ASCENDING)], unique=True)
+
         db.perms.create_index([('match', ASCENDING)], unique=True)
+
         db.users.drop_indexes()
-        db.users.create_index([('login', ASCENDING)], unique=True,
-                              partialFilterExpression={'login': {'$type': 'string'}})
-        db.users.create_index([('email', ASCENDING)], unique=True,
-                              partialFilterExpression={'email': {'$type': 'string'}})
+        db.users.create_index([('login', ASCENDING)], unique=True, partialFilterExpression={'login': {'$type': 'string'}})
+        db.users.create_index([('email', ASCENDING)], unique=True, partialFilterExpression={'email': {'$type': 'string'}})
+
         db.groups.create_index([('name', ASCENDING)], unique=True)
+
         db.metrics.create_index([('group', ASCENDING), ('name', ASCENDING)], unique=True)
 
     @staticmethod
@@ -855,7 +860,7 @@ class Backend(Database):
                 {'$unwind': '$service'},
                 {'$match': query.where},
                 {'$project': {'environment': 1, 'service': 1, group_by: 1}},
-                {'$group': {'_id': {'environment': '$environment', 'service': '$service', group_by: '$' + group_by},'count': {'$sum': 1}}},
+                {'$group': {'_id': {'environment': '$environment', 'service': '$service', group_by: '$' + group_by}, 'count': {'$sum': 1}}},
                 {'$limit': topn}
             ]
 
