@@ -62,8 +62,9 @@ CREATE TABLE IF NOT EXISTS alerts (
 DO $$
 BEGIN
     ALTER TABLE alerts ADD COLUMN update_time timestamp without time zone;
+    ALTER TABLE alerts ADD COLUMN project text;
 EXCEPTION
-    WHEN duplicate_column THEN RAISE NOTICE 'column "update_time" already exists in alerts.';
+    WHEN duplicate_column THEN RAISE NOTICE 'adding column already exists in alerts.';
 END$$;
 
 CREATE TABLE IF NOT EXISTS notes (
