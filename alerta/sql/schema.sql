@@ -32,8 +32,8 @@ CREATE TABLE IF NOT EXISTS alerts (
     id text PRIMARY KEY,
     resource text NOT NULL,
     event text NOT NULL,
+    project text NOT NULL,
     environment text,
-    project text,
     severity text,
     correlate text[],
     status text,
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS alerts (
 DO $$
 BEGIN
     ALTER TABLE alerts ADD COLUMN update_time timestamp without time zone;
-    ALTER TABLE alerts ADD COLUMN project text;
+    ALTER TABLE alerts ADD COLUMN project text NOT NULL;
 EXCEPTION
     WHEN duplicate_column THEN RAISE NOTICE 'adding column already exists in alerts.';
 END$$;
