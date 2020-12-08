@@ -52,7 +52,7 @@ class HistoryAdapter:
 
 
 Record = namedtuple('Record', [
-    'id', 'resource', 'event', 'environment', 'project', 'severity', 'status',
+    'id', 'resource', 'event', 'environment', 'severity', 'status',
     'service', 'group', 'value', 'text', 'tags', 'attributes', 'origin',
     'update_time', 'user', 'timeout', 'type', 'customer'
 ])
@@ -419,7 +419,6 @@ class Backend(Database):
                 resource=h.resource,
                 event=h.event,
                 environment=h.environment,
-                project=h.project,
                 severity=h.severity,
                 status=h.status,
                 service=h.service,
@@ -460,7 +459,6 @@ class Backend(Database):
                 resource=h.resource,
                 event=h.event,
                 environment=h.environment,
-                project=h.project,
                 severity=h.severity,
                 status=h.status,
                 service=h.service,
