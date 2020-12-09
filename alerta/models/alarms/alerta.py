@@ -11,6 +11,7 @@ SEVERITY_MAP = {
     'warning': 4,
     'indeterminate': 5,
     'informational': 6,
+    'info': 6,
     'normal': 7,
     'ok': 7,
     'cleared': 7,
@@ -33,6 +34,7 @@ COLOR_MAP = {
         'normal': '#00CC00',
         'ok': '#00CC00',
         'informational': '#00CC00',
+        'info': '#00CC00',
         'debug': '#9D006D',  # purple
         'trace': '#7554BF',  # violet
         'unknown': 'silver'
