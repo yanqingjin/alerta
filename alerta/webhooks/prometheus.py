@@ -43,13 +43,14 @@ def parse_prometheus(alert: JSON, external_url: str) -> Alert:
     # labels
     resource = labels.pop('exported_instance', None) or labels.pop('instance', 'n/a')
     event = labels.pop('event', None) or labels.pop('alertname')
-    environment = labels.pop('environment', 'Production')
+    environment = labels.pop('environment', 'HSC')
     customer = labels.pop('customer', None)
     correlate = labels.pop('correlate').split(',') if 'correlate' in labels else None
     service = labels.pop('service', '').split(',')
     group = labels.pop('group', None) or labels.pop('job', 'Prometheus')
     origin = 'prometheus/' + labels.pop('monitor', '-')
     tags = ['{}={}'.format(k, v) for k, v in labels.items()]  # any labels left over are used for tags
+    project = labels.pop('project', 'Prometheus')
 
     try:
         timeout = int(labels.pop('timeout', 0)) or None
@@ -90,7 +91,8 @@ def parse_prometheus(alert: JSON, external_url: str) -> Alert:
         event_type='prometheusAlert',
         timeout=timeout,
         raw_data=alert,
-        tags=tags
+        tags=tags,
+        project=project
     )
 
 

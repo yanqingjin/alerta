@@ -51,6 +51,7 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
     group = labels.pop('group', None) or labels.pop('organization', None) or labels.pop('job', 'HSDP')
     origin = 'hsdp/' + labels.pop('monitor', '-')
     tags = ['{}={}'.format(k, v) for k, v in labels.items()]  # any labels left over are used for tags
+    project = labels.pop('project', 'HSDP')
 
     try:
         timeout = int(labels.pop('timeout', 0)) or None
@@ -91,7 +92,8 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
         event_type='hsdpAlert',
         timeout=timeout,
         raw_data=alert,
-        tags=tags
+        tags=tags,
+        project=project
     )
 
 

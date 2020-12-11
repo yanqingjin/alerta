@@ -28,6 +28,7 @@ class CloudMonitorWebhook(WebhookBase):
     def incoming(self, path, query_string, payload):
         if payload and 'alertName' in payload:
             return Alert(
+                project='HSC',
                 resource=payload['instanceName'],
                 event=payload['alertName'],
                 environment='HSC',
@@ -43,8 +44,7 @@ class CloudMonitorWebhook(WebhookBase):
                     'dimensions': payload['dimensions'],
                     'ruleId': payload['ruleId'],
                     'signature': payload['signature']
-                },
-                raw_data=payload
+                }
             )
         else:
             raise ApiError('no alerts in CloudMonitor notification payload', 400)
