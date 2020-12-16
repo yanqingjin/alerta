@@ -16,6 +16,9 @@ WORKDIR /app
 RUN pip install -r requirements.txt
 RUN pip install .
 
+RUN pip install git+https://github.com/alerta/alerta-contrib.git#subdirectory=plugins/amqp
+RUN pip install git+https://github.com/alerta/alerta-contrib.git#subdirectory=integrations/mailer
+
 ENV ALERTA_SVR_CONF_FILE /app/alertad.conf
 ENV ALERTA_CONF_FILE /app/alerta.conf
 ENV ALERTA_ENDPOINT=http://localhost:8080
