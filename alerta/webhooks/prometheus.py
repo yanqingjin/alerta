@@ -41,16 +41,19 @@ def parse_prometheus(alert: JSON, external_url: str) -> Alert:
         severity = 'unknown'
 
     # labels
-    resource = labels.pop('exported_instance', None) or labels.pop('instance', 'n/a')
+    # resource = labels.pop('exported_instance', None) or labels.pop('instance', 'n/a')
+    resource = labels.pop('container', 'no data')
+    service = labels.pop('service', '').split(',')
+    # project = labels.pop('project', 'Prometheus')
+    project = labels.pop('namespace', None) or labels.pop('project', 'Unknown')
+
     event = labels.pop('event', None) or labels.pop('alertname')
     environment = labels.pop('environment', 'HSC')
     customer = labels.pop('customer', None)
     correlate = labels.pop('correlate').split(',') if 'correlate' in labels else None
-    service = labels.pop('service', '').split(',')
     group = labels.pop('group', None) or labels.pop('job', 'Prometheus')
     origin = 'prometheus/' + labels.pop('monitor', '-')
     tags = ['{}={}'.format(k, v) for k, v in labels.items()]  # any labels left over are used for tags
-    project = labels.pop('project', 'Prometheus')
 
     try:
         timeout = int(labels.pop('timeout', 0)) or None
