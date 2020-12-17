@@ -41,9 +41,11 @@ def parse_prometheus(alert: JSON, external_url: str) -> Alert:
         severity = 'unknown'
 
     # labels
+    svc = labels.pop('service', '').split(',')
+
     # resource = labels.pop('exported_instance', None) or labels.pop('instance', 'n/a')
-    resource = labels.pop('container', 'no data')
-    service = labels.pop('service', '').split(',')
+    # service = labels.pop('service', '').split(',')
+    resource = service = labels.pop('container', 'no data') if len(svc) else svc
     # project = labels.pop('project', 'Prometheus')
     project = labels.pop('namespace', None) or labels.pop('project', 'Unknown')
 
