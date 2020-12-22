@@ -7,6 +7,8 @@ from . import WebhookBase
 
 JSON = Dict[str, Any]
 
+UNKNOWN = 'Unknown'
+HSDP = 'HSDP'
 
 def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> Alert:
 
@@ -39,19 +41,17 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
         severity = 'unknown'
 
     # labels
-    # pop返回字典中的key对应的值并且在字典中删除这一对键值对
-    resource = labels.pop('application', None) or group_labels.get('application')
-    # 如果labels里面没有内容，groupLabels去找, 找不到，默认None
+    # 如果labels里面没有 去groupLabels找
+    resource = labels.pop('application', None) or group_labels.get('application', 'n/a')
+    service = [resource]
+    project = labels.pop('project', HSDP)
     event = labels.pop('event', None) or labels.pop('alertname', None) or group_labels.get('alertname')
-    # TODO(RylandCai): add project here (maybe into attributes)
-    environment = 'HSDP'
+    environment = HSDP
     customer = labels.pop('customer', None)
     correlate = labels.pop('correlate').split(',') if 'correlate' in labels else None
-    service = [labels.pop('application', None) or group_labels.get('application')]
-    group = labels.pop('group', None) or labels.pop('organization', None) or labels.pop('job', 'HSDP')
+    group = labels.pop('group', None) or labels.pop('organization', None) or labels.pop('job', HSDP)
     origin = 'hsdp/' + labels.pop('monitor', '-')
     tags = ['{}={}'.format(k, v) for k, v in labels.items()]  # any labels left over are used for tags
-    project = labels.pop('project', 'HSDP')
 
     try:
         timeout = int(labels.pop('timeout', 0)) or None
@@ -79,6 +79,7 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
     return Alert(
         resource=resource,
         event=event,
+        project=project,
         environment=environment,
         customer=customer,
         severity=severity,
@@ -92,8 +93,7 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
         event_type='hsdpAlert',
         timeout=timeout,
         raw_data=alert,
-        tags=tags,
-        project=project
+        tags=tags
     )
 
 
