@@ -10,6 +10,8 @@ from . import WebhookBase
 JSON = Dict[str, Any]
 dt = datetime.datetime
 
+UNKNOWN = 'Unknown'
+HSC = 'HSC'
 
 def parse_prometheus(alert: JSON, external_url: str) -> Alert:
 
@@ -44,11 +46,11 @@ def parse_prometheus(alert: JSON, external_url: str) -> Alert:
     # resource = labels.pop('exported_instance', None) or labels.pop('instance', 'n/a')
     resource = labels.pop('container', None) or labels.pop('service', 'n/a')
     # service = labels.pop('service', '').split(',')
-    service = resource.split(',')
+    service = [resource]
     # project = labels.pop('project', 'Prometheus')
-    project = labels.pop('namespace', None) or labels.pop('project', 'Unknown')
+    project = labels.pop('namespace', None) or labels.pop('project', UNKNOWN)
     event = labels.pop('event', None) or labels.pop('alertname')
-    environment = labels.pop('environment', 'HSC')
+    environment = labels.pop('environment', HSC)
     customer = labels.pop('customer', None)
     correlate = labels.pop('correlate').split(',') if 'correlate' in labels else None
     group = labels.pop('group', None) or labels.pop('job', 'Prometheus')
@@ -81,6 +83,7 @@ def parse_prometheus(alert: JSON, external_url: str) -> Alert:
     return Alert(
         resource=resource,
         event=event,
+        project=project,
         environment=environment,
         customer=customer,
         severity=severity,
@@ -94,8 +97,7 @@ def parse_prometheus(alert: JSON, external_url: str) -> Alert:
         event_type='prometheusAlert',
         timeout=timeout,
         raw_data=alert,
-        tags=tags,
-        project=project
+        tags=tags
     )
 
 

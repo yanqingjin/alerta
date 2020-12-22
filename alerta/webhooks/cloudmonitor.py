@@ -28,9 +28,9 @@ class CloudMonitorWebhook(WebhookBase):
     def incoming(self, path, query_string, payload):
         if payload and 'alertName' in payload:
             return Alert(
-                project='HSC',
                 resource=payload['instanceName'],
                 event=payload['alertName'],
+                project='HSC',
                 environment='HSC',
                 severity=self.trigger_level_to_severity(payload['triggerLevel']),
                 service=[payload['instanceName']],
