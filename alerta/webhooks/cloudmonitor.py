@@ -1,10 +1,13 @@
-from datetime import datetime
+import logging
 
+from datetime import datetime
+from flask import current_app
 from alerta.app import alarm_model
 from alerta.models.alert import Alert
 from alerta.exceptions import ApiError
 from . import WebhookBase
 
+LOG = logging.getLogger('alerta.webhooks')
 
 class CloudMonitorWebhook(WebhookBase):
     """
@@ -26,14 +29,24 @@ class CloudMonitorWebhook(WebhookBase):
             return 'unknown'
 
     def incoming(self, path, query_string, payload):
+        LOG.info('payload: {}'.format(payload))
+
         if payload and 'alertName' in payload:
+
+            app = payload['instanceName'] or 'Unknown-Unknown'
+            ind = app.find('-')
+
+            project = app[:ind]
+            service = [app[ind + 1:]]
+            resource = service[0]
+
             return Alert(
-                resource=payload['instanceName'],
                 event=payload['alertName'],
-                project='HSC',
+                project=project,
+                service=service,
+                resource=resource,
                 environment='HSC',
                 severity=self.trigger_level_to_severity(payload['triggerLevel']),
-                service=[payload['instanceName']],
                 group=payload['namespace'],
                 value=payload['curValue'],
                 origin='CloudMonitor',

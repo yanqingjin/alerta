@@ -1,13 +1,14 @@
-from typing import Any, Dict
+import logging
 
+from typing import Any, Dict
 from alerta.app import alarm_model
 from alerta.models.alert import Alert
 from alerta.exceptions import ApiError
 from . import WebhookBase
 
 JSON = Dict[str, Any]
+LOG = logging.getLogger('alerta.webhooks')
 
-UNKNOWN = 'Unknown'
 HSDP = 'HSDP'
 
 def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> Alert:
@@ -40,11 +41,13 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
     else:
         severity = 'unknown'
 
+    app = labels.pop('application', None) or group_labels.get('application', 'Unknown-Unknown')
+    ind = app.find('-')
+
     # labels
-    # 如果labels里面没有 去groupLabels找
-    resource = labels.pop('application', None) or group_labels.get('application', 'n/a')
-    service = [resource]
-    project = labels.pop('project', HSDP)
+    project = app[:ind]
+    service = [app[ind+1:]]
+    resource = service[0]
     event = labels.pop('event', None) or labels.pop('alertname', None) or group_labels.get('alertname')
     environment = HSDP
     customer = labels.pop('customer', None)
@@ -103,6 +106,7 @@ class HsdpWebhook(WebhookBase):
     """
 
     def incoming(self, path, query_string, payload):
+        LOG.info('payload: {}'.format(payload))
 
         if payload and 'alerts' in payload:
             external_url = payload.get('externalURL')
