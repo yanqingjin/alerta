@@ -7,7 +7,6 @@ from . import WebhookBase
 
 JSON = Dict[str, Any]
 
-UNKNOWN = 'Unknown'
 HSDP = 'HSDP'
 
 def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> Alert:
@@ -40,11 +39,13 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
     else:
         severity = 'unknown'
 
+    app = labels.pop('application', None) or group_labels.get('application', 'Unknown-Unknown')
+    ind = app.find('-')
+
     # labels
-    # 如果labels里面没有 去groupLabels找
-    resource = labels.pop('application', None) or group_labels.get('application', 'n/a')
-    service = [resource]
-    project = labels.pop('project', HSDP)
+    project = app[:ind]
+    service = [app[ind+1:]]
+    resource = service[0]
     event = labels.pop('event', None) or labels.pop('alertname', None) or group_labels.get('alertname')
     environment = HSDP
     customer = labels.pop('customer', None)

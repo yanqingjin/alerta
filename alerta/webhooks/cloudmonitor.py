@@ -27,13 +27,21 @@ class CloudMonitorWebhook(WebhookBase):
 
     def incoming(self, path, query_string, payload):
         if payload and 'alertName' in payload:
+
+            app = payload['instanceName'] or 'Unknown-Unknown'
+            ind = app.find('-')
+
+            project = app[:ind]
+            service = [app[ind + 1:]]
+            resource = service[0]
+
             return Alert(
-                resource=payload['instanceName'],
                 event=payload['alertName'],
-                project='HSC',
+                project=project,
+                service=service,
+                resource=resource,
                 environment='HSC',
                 severity=self.trigger_level_to_severity(payload['triggerLevel']),
-                service=[payload['instanceName']],
                 group=payload['namespace'],
                 value=payload['curValue'],
                 origin='CloudMonitor',
