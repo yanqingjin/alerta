@@ -8,7 +8,7 @@
 
 from typing import Any, Dict, List, Tuple  # noqa
 
-DEBUG = True
+DEBUG = False
 
 BASE_URL = ''
 USE_PROXYFIX = False
