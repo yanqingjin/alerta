@@ -1,7 +1,7 @@
 import datetime
-from typing import Any, Dict
+import logging
 
-from flask import current_app
+from typing import Any, Dict
 from alerta.app import alarm_model
 from alerta.exceptions import ApiError
 from alerta.models.alert import Alert
@@ -9,6 +9,7 @@ from alerta.models.alert import Alert
 from . import WebhookBase
 
 JSON = Dict[str, Any]
+LOG = logging.getLogger('alerta.webhooks')
 dt = datetime.datetime
 
 UNKNOWN = 'Unknown'
@@ -108,7 +109,7 @@ class PrometheusWebhook(WebhookBase):
     """
 
     def incoming(self, path, query_string, payload):
-        current_app.logger.debug('payload: {}'.format(payload))
+        LOG.info('payload: {}'.format(payload))
 
         if payload and 'alerts' in payload:
             external_url = payload.get('externalURL')
