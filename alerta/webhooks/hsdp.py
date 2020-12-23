@@ -44,6 +44,10 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
     app = labels.pop('application', None) or group_labels.get('application', 'Unknown-Unknown')
     ind = app.find('-')
 
+    if ind == -1:
+        app = 'Unknown-Unknown'
+        ind = app.find('-')
+
     # labels
     project = app[:ind]
     service = [app[ind+1:]]

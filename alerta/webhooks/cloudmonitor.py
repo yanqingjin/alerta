@@ -36,6 +36,10 @@ class CloudMonitorWebhook(WebhookBase):
             app = payload['instanceName'] or 'Unknown-Unknown'
             ind = app.find('-')
 
+            if ind == -1:
+                app = 'Unknown-Unknown'
+                ind = app.find('-')
+
             project = app[:ind]
             service = [app[ind + 1:]]
             resource = service[0]
