@@ -30,6 +30,7 @@ class CloudMonitorWebhook(WebhookBase):
 
     def incoming(self, path, query_string, payload):
         LOG.info('payload: {}'.format(payload))
+        print('payload: {}'.format(payload))
 
         if payload and 'alertName' in payload:
 

@@ -110,6 +110,7 @@ class PrometheusWebhook(WebhookBase):
 
     def incoming(self, path, query_string, payload):
         LOG.info('payload: {}'.format(payload))
+        print('payload: {}'.format(payload))
 
         if payload and 'alerts' in payload:
             external_url = payload.get('externalURL')
