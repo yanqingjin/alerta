@@ -42,14 +42,14 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
     else:
         severity = 'unknown'
 
-    map = config.get('RESOURCE_FIELDS_MAPPING', [])
+    res_map = config.get('RESOURCE_FIELDS_MAPPING', [])
     res = ''
-    for m in map:
-        if labels.get(m):
-            res = labels.pop(m)
+    for field in res_map:
+        if labels.get(field):
+            res = labels.pop(field)
             break
-        elif group_labels.get(m):
-            res = group_labels.pop(m)
+        elif group_labels.get(field):
+            res = group_labels.pop(field)
             break
 
     if res.find('-') == -1:
