@@ -145,11 +145,10 @@ CORS_ORIGINS = [
 CORS_SUPPORTS_CREDENTIALS = AUTH_REQUIRED
 
 # Serverity settings
-SEVERITY_MAP = {}  # type: Dict[str, Any]
-DEFAULT_NORMAL_SEVERITY = None
-DEFAULT_PREVIOUS_SEVERITY = None
-COLOR_MAP = {}  # type: Dict[str, Any]
-
+# SEVERITY_MAP = {}  # type: Dict[str, Any]
+# COLOR_MAP = {}  # type: Dict[str, Any]
+# DEFAULT_NORMAL_SEVERITY = None
+# DEFAULT_PREVIOUS_SEVERITY = None
 SEVERITY_MAP = {
     'critical': 1,
     'major': 2,
