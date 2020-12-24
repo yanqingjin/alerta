@@ -41,16 +41,18 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
     else:
         severity = 'unknown'
 
-    app = labels.pop('application', None) or group_labels.get('application', 'Unknown-Unknown')
-    ind = app.find('-')
+    # resource from application, use 'application'
+    # resource from services(rds, redis, s3), use 'hsdp_instance_name'
+    res = labels.pop('hsdp_instance_name', None) or labels.pop('application', None) or group_labels.get('application', 'Unknown-Unknown')
+    ind = res.find('-')
 
     if ind == -1:
-        app = 'Unknown-Unknown'
-        ind = app.find('-')
+        res = 'Unknown-Unknown'
+        ind = res.find('-')
 
     # labels
-    project = app[:ind]
-    service = [app[ind+1:]]
+    project = res[:ind]
+    service = [res[ind+1:]]
     resource = service[0]
     event = labels.pop('event', None) or labels.pop('alertname', None) or group_labels.get('alertname')
     environment = HSDP
