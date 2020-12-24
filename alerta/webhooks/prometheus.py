@@ -47,7 +47,7 @@ def parse_prometheus(alert: JSON, external_url: str) -> Alert:
     # labels
     # resource = labels.pop('exported_instance', None) or labels.pop('instance', 'n/a')
     # service = labels.pop('service', '').split(',')
-    resource = labels.pop('container', None) or labels.pop('service', UNKNOWN)
+    resource = labels.pop('container', None) or labels.pop('service', None) or labels.pop('pod', UNKNOWN)
     service = [resource]
     project = labels.pop('namespace', None) or labels.pop('project', UNKNOWN)
     event = labels.pop('event', None) or labels.pop('alertname')
