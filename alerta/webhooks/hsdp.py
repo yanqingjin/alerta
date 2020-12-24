@@ -4,10 +4,12 @@ from typing import Any, Dict
 from alerta.app import alarm_model
 from alerta.models.alert import Alert
 from alerta.exceptions import ApiError
+from alerta.plugins import app
 from . import WebhookBase
 
 JSON = Dict[str, Any]
 LOG = logging.getLogger('alerta.webhooks')
+config = app.config
 
 HSDP = 'HSDP'
 
@@ -17,7 +19,6 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
 
     # Allow labels and annotations to use python string formats that refer to
     # other labels eg. runbook = 'https://internal.myorg.net/wiki/alerts/{app}/{alertname}'
-
     labels = {}
     for k, v in alert['labels'].items():
         try:
@@ -41,19 +42,26 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
     else:
         severity = 'unknown'
 
-    app = labels.pop('application', None) or group_labels.get('application', 'Unknown-Unknown')
-    ind = app.find('-')
+    res_map = config.get('HSDP_FIELD_MAPPING', [])
+    res = ''
+    for field in res_map:
+        if labels.get(field):
+            res = labels.pop(field)
+            break
+        elif group_labels.get(field):
+            res = group_labels.pop(field)
+            break
 
-    if ind == -1:
-        app = 'Unknown-Unknown'
-        ind = app.find('-')
+    if res.find('-') == -1:
+        res = 'Unknown-Unknown'
+    ind = res.find('-')
 
     # labels
-    project = app[:ind]
-    service = [app[ind+1:]]
+    project = res[:ind]
+    service = [res[ind+1:]]
     resource = service[0]
-    event = labels.pop('event', None) or labels.pop('alertname', None) or group_labels.get('alertname')
     environment = HSDP
+    event = labels.pop('event', None) or labels.pop('alertname', None) or group_labels.get('alertname')
     customer = labels.pop('customer', None)
     correlate = labels.pop('correlate').split(',') if 'correlate' in labels else None
     group = labels.pop('group', None) or labels.pop('organization', None) or labels.pop('job', HSDP)
