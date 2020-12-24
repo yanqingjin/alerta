@@ -2,6 +2,7 @@ import logging
 
 from typing import Any, Dict
 from alerta.app import alarm_model
+from alerta.plugins import app
 from alerta.models.alert import Alert
 from alerta.exceptions import ApiError
 from . import WebhookBase
@@ -10,15 +11,14 @@ JSON = Dict[str, Any]
 LOG = logging.getLogger('alerta.webhooks')
 
 HSDP = 'HSDP'
+config = app.config
 
 def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> Alert:
 
-    # print(config), config
     status = alert.get('status', 'firing')
 
     # Allow labels and annotations to use python string formats that refer to
     # other labels eg. runbook = 'https://internal.myorg.net/wiki/alerts/{app}/{alertname}'
-
     labels = {}
     for k, v in alert['labels'].items():
         try:
@@ -42,21 +42,26 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
     else:
         severity = 'unknown'
 
-    # resource from application, use 'application'
-    # resource from services(rds, redis, s3), use 'hsdp_instance_name'
-    res = labels.pop('hsdp_instance_name', None) or labels.pop('application', None) or group_labels.get('application', 'Unknown-Unknown')
-    ind = res.find('-')
+    map = config.get('RESOURCE_FIELDS_MAPPING', [])
+    res = ''
+    for m in map:
+        if labels.get(m):
+            res = labels.pop(m)
+            break
+        elif group_labels.get(m):
+            res = group_labels.pop(m)
+            break
 
-    if ind == -1:
+    if res.find('-') == -1:
         res = 'Unknown-Unknown'
-        ind = res.find('-')
+    ind = res.find('-')
 
     # labels
     project = res[:ind]
     service = [res[ind+1:]]
     resource = service[0]
-    event = labels.pop('event', None) or labels.pop('alertname', None) or group_labels.get('alertname')
     environment = HSDP
+    event = labels.pop('event', None) or labels.pop('alertname', None) or group_labels.get('alertname')
     customer = labels.pop('customer', None)
     correlate = labels.pop('correlate').split(',') if 'correlate' in labels else None
     group = labels.pop('group', None) or labels.pop('organization', None) or labels.pop('job', HSDP)

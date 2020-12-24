@@ -237,3 +237,8 @@ FWD_DESTINATIONS = [
 ]  # type: List[Tuple]
 
 # valid actions=['*', 'alerts', 'actions', 'open', 'assign', 'ack', 'unack', 'shelve', 'unshelve', 'close', 'delete']
+
+# HSDP fields mapping
+# resource from application, use 'application'
+# resource from services(rds, redis, s3), use 'hsdp_instance_name'
+RESOURCE_FIELDS_MAPPING = ['application', 'hsdp_instance_name']
