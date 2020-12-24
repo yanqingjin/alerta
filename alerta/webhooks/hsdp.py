@@ -13,6 +13,7 @@ HSDP = 'HSDP'
 
 def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> Alert:
 
+    # print(config), config
     status = alert.get('status', 'firing')
 
     # Allow labels and annotations to use python string formats that refer to
