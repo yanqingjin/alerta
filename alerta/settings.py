@@ -238,7 +238,9 @@ FWD_DESTINATIONS = [
 
 # valid actions=['*', 'alerts', 'actions', 'open', 'assign', 'ack', 'unack', 'shelve', 'unshelve', 'close', 'delete']
 
-# HSDP fields mapping
-# resource from application, use 'application'
-# resource from services(rds, redis, s3), use 'hsdp_instance_name'
-RESOURCE_FIELDS_MAPPING = ['application', 'hsdp_instance_name']
+# resource field mapping
+# for hsdp,
+# resource from application, use 'application';
+# resource from services(rds, redis, s3), use 'hsdp_instance_name'.
+HSDP_FIELD_MAPPING = ['application', 'hsdp_instance_name']
+PROM_FIELD_MAPPING = ['container', 'service', 'pod']

@@ -2,16 +2,16 @@ import logging
 
 from typing import Any, Dict
 from alerta.app import alarm_model
-from alerta.plugins import app
 from alerta.models.alert import Alert
 from alerta.exceptions import ApiError
+from alerta.plugins import app
 from . import WebhookBase
 
 JSON = Dict[str, Any]
 LOG = logging.getLogger('alerta.webhooks')
+config = app.config
 
 HSDP = 'HSDP'
-config = app.config
 
 def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> Alert:
 
@@ -42,7 +42,7 @@ def parse_hsdp(alert: JSON, group_labels: Dict[str, str], external_url: str) -> 
     else:
         severity = 'unknown'
 
-    res_map = config.get('RESOURCE_FIELDS_MAPPING', [])
+    res_map = config.get('HSDP_FIELD_MAPPING', [])
     res = ''
     for field in res_map:
         if labels.get(field):
