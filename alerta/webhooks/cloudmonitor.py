@@ -32,7 +32,6 @@ class CloudMonitorWebhook(WebhookBase):
         LOG.info('payload: {}'.format(payload))
 
         if payload and 'alertName' in payload:
-
             app = payload['instanceName'] or 'Unknown-Unknown'
             ind = app.find('-')
 
