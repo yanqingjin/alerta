@@ -27,8 +27,7 @@ except Exception:
 
 
 switches = [
-    Switch('auto-refresh-allow', 'Alerta console auto-refresh',
-           'Allow consoles to auto-refresh alerts', SwitchState.ON),
+    Switch('auto-refresh-allow', 'Alerta console auto-refresh', 'Allow consoles to auto-refresh alerts', SwitchState.ON),
     Switch('sender-api-allow', 'API alert submission', 'Allow alerts to be submitted via the API', SwitchState.ON)
 ]
 total_alert_gauge = Gauge('alerts', 'total', 'Total alerts', 'Total number of alerts in the database')
